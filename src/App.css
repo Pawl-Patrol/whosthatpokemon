@@ -81,6 +81,7 @@
   border-radius: 5px;
   text-align: center;
   color: var(--dark);
+  user-select: none;
 }
 
 .guess input {
