@@ -10,11 +10,13 @@ const randID = () => Math.floor(Math.random()*pokeapi.length);
 export default class App extends React.Component {
   state = {
     pokemon: pokeapi[randID()],
-    correct: 0,
-    incorrect: 0,
     skip: false
   };
   input = React.createRef<HTMLInputElement>();
+  types = [
+    React.createRef<HTMLDivElement>(),
+    React.createRef<HTMLDivElement>()
+  ]
   constructor(props: any) {
     super(props);
   }
@@ -23,45 +25,110 @@ export default class App extends React.Component {
       <div className="grid">
         <div className="guess">
           <h1>Who's that Pokemon?</h1>
-          <div className="pokemon">
-            <div className="types">
-              {this.state.pokemon.types.map((t: string) => 
-                <span className={t}>{(typeapi as any)[t]}</span>
-              )}
-            </div>
-            <img src={this.state.pokemon.img}/>
-          </div>
-          <input type="text" ref={this.input} onChange={this.onInput.bind(this)}/>
+          <img src={this.state.pokemon.img}/>
+          <input type="text" ref={this.input} onDrop={undefined} onChange={this.onChange.bind(this)}/>
         </div>
-        <span className="correct">{this.state.correct}</span>
-        <span className="incorrect">{this.state.incorrect}</span>
-        <button className="skip" onClick={this.onSkip.bind(this)}><h2>{this.state.skip ? "weiter" : "anzeigen"}</h2></button>
+        <div className="types-drop">
+          {this.state.pokemon.types.map((_, i) => 
+            <div
+              ref={this.types[i]}
+              className="type drop"
+              onDragEnter={this.onDragEnter.bind(this)}
+              onDragLeave={this.onDragLeave.bind(this)}
+              onDragOver={this.onDragOver.bind(this)}
+              onDrop={this.onDragDrop.bind(this)}
+            ></div>
+          )}
+        </div>
+        <div className="types-drag">
+          {Object.getOwnPropertyNames(typeapi).map(type => 
+            <div
+              className="type drag"
+              id={type}
+              draggable={true}
+              onDragStart={this.onDragStart.bind(this)}
+              onDragEnd={this.onDragEnd.bind(this)}
+            >{(typeapi as any)[type]}</div>
+          )}
+        </div>
+        <button className="skip" onClick={this.onClick.bind(this)}><h2>{this.state.skip ? "weiter" : "anzeigen"}</h2></button>
       </div>
     </div>
   }
-  updateState() {
-    this.setState(this.state);
-  }
   roll() {
     this.state.pokemon = pokeapi[randID()];
+    this.types.map((type) => {
+      if (type.current) type.current.id = "";
+    })
     this.input.current!.value = "";
+    this.input.current!.classList.remove('correct');
+    this.input.current!.disabled = false;
   }
-  onInput() {
-    if (this.input.current!.value.toLowerCase() == this.state.pokemon.name.toLowerCase()) {
-      this.state.correct++;
-      this.roll();
-      this.updateState();
+  check() {
+    if (this.input.current!.value.toLocaleLowerCase() !== this.state.pokemon.name.toLowerCase()) return;
+  
+    var types: string[] = [];
+    this.types.map((type) => {
+      if (type.current) types.push(type.current.id);
+    })
+  
+    for (var type of this.state.pokemon.types) {
+      if (!types.includes(type)) return;
     }
+
+    this.roll();
+    this.setState(this.state);
   }
-  onSkip() {
+  onChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value.toLowerCase() == this.state.pokemon.name.toLowerCase()) {
+      e.target.classList.add('correct');
+      e.target.disabled = true;
+    }
+    this.check();
+  }
+  onClick() {
     if (this.state.skip) {
       this.roll();
     } else {
-      this.state.incorrect++;
       this.input.current!.value = this.state.pokemon.name;
+      this.input.current!.disabled = true;
+      this.types.map((type, i) => {
+        if (type.current) type.current.id = this.state.pokemon.types[i];
+      })
     }
-    this.input.current!.disabled = !this.state.skip;
     this.state.skip = !this.state.skip;
-    this.updateState();
+    this.setState(this.state);
+  }
+  onDragStart(e: React.DragEvent<HTMLDivElement>) {
+    const target = e.target! as HTMLDivElement;
+    e.dataTransfer?.setData('type', target.id);
+    setTimeout(() => {
+      target.classList.add('dragged');
+    }, 0);
+  }
+  onDragEnd(e: React.DragEvent<HTMLDivElement>) {
+    const target = e.target! as HTMLDivElement;
+    target.classList.remove('dragged');
+  }
+  onDragEnter(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    const target = e.target! as HTMLDivElement;
+    target.classList.add('drag-over');
+  }
+  onDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+  }
+  onDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    const target = e.target! as HTMLDivElement;
+    target.classList.remove('drag-over');
+  }
+  onDragDrop(e: React.DragEvent<HTMLDivElement>) {
+    const target = e.target! as HTMLDivElement;
+    target.classList.remove('drag-over');
+    const type = e.dataTransfer.getData('type');
+    if (this.state.pokemon.types.includes(type)) {
+      target.id = type;
+      this.check();
+    }
   }
 }

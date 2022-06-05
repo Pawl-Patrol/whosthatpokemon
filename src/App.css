@@ -8,6 +8,12 @@
   --fuchsia: #EB459E;
 }
 
+body {
+  font-size: 2vmin;
+}
+
+/* LAYOUT */
+
 .app {
   width: 100vw;
   height: 100vh;
@@ -33,10 +39,12 @@
   box-shadow: 0 0 10px -5px black;
 }
 
+/* PKMN CARD */
+
 .guess {
   grid-column: 2;
   grid-row-start: 1;
-  grid-row-end: 4;
+  grid-row-end: 3;
 
   display: flex;
   flex-direction: column;
@@ -55,38 +63,15 @@
   user-select: none;
 }
 
-.guess .pokemon {
-  width: 90%;
-  height: 100%;
-}
-
-.guess .pokemon img {
+.guess img {
   width: 100%;
-  height: 50vmin;
+  height: 100%;
   object-fit: contain;
 }
 
-.guess .pokemon .types {
-  width: 100%;
-
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-}
-
-.guess .pokemon .types > * {
-  padding: 3px;
-  width: 100%;
-  margin: 5px;
-  border-radius: 5px;
-  text-align: center;
-  color: var(--dark);
-  user-select: none;
-}
-
 .guess input {
-  margin-bottom: 1.5rem;
   width: 80%;
+  margin-bottom: 1.5rem;
   font-size: 1.5rem;
   text-align: center;
   border-style: none;
@@ -106,6 +91,74 @@
 .guess input:focus::placeholder {
   color: transparent;
 }
+
+.correct {
+  color: var(--green) !important;
+  border-bottom: 2px solid var(--green) !important;
+}
+
+/* TYPES */
+
+.type {
+  text-align: center;
+  border-radius: 5px;
+  user-select: none;
+}
+
+/* DRAG */
+
+.types-drag {
+  grid-column: 1;
+  grid-row-start: 1;
+  grid-row-end: 4;
+
+  background-color: var(--dark);
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.drag {
+  width: 80%;
+  cursor: move;
+}
+
+/* DROP */
+
+.types-drop {
+  height: 100%;
+  grid-row: 3;
+  grid-column: 2;
+
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+
+  background-color: var(--dark);
+  border-radius: 10px;
+}
+
+.drop {
+  height: 50%;
+  width: 50%;
+  margin: 5%;
+  background-color: var(--light);
+}
+
+/* DRAG AND DROP */
+
+.dragged {
+  opacity: 0;
+}
+
+.drag-over {
+  outline: 2px solid var(--blurple);
+}
+
+/* SKIP BUTTON */
 
 .skip {
   grid-row: 3;
@@ -128,28 +181,4 @@
 
 .skip:active {
   filter: brightness(95%);
-}
-
-.correct, .incorrect {
-  display: flex;
-  justify-content: center;
-
-  border-radius: 10px;
-  font-size: 3rem;
-
-  user-select: none;
-}
-
-.correct {
-  grid-row: 1;
-  grid-column: 1;
-
-  background-color: var(--green);
-}
-
-.incorrect {
-  grid-row: 1;
-  grid-column: 3;
-
-  background-color: var(--red);
 }
